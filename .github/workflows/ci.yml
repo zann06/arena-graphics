@@ -81,6 +81,9 @@ jobs:
       - name: Apply database migrations
         run: pnpm db:migrate
 
+      - name: Seed demo data
+        run: pnpm db:seed
+
       - name: Build
         run: pnpm build
 

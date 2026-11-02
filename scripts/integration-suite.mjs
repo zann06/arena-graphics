@@ -23,6 +23,14 @@ if (!(await serverUp())) {
   process.exit(1);
 }
 
+// The graphics/MLBB smoke tests need a match with teams; seeding is idempotent
+// and makes the suite pass from a clean database.
+console.log('==> Seed demo data');
+const seeded = spawnSync('pnpm', ['db:seed'], { stdio: 'inherit', shell: true });
+if (seeded.status !== 0) {
+  console.warn('Warning: seeding demo data failed — smoke tests may fail.');
+}
+
 const steps = [
   { name: 'Graphics / state recovery', cmd: 'node', args: ['scripts/graphics-smoke.mjs'] },
   { name: 'MLBB features', cmd: 'node', args: ['scripts/mlbb-smoke.mjs'] },

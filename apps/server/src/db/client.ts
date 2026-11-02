@@ -1,5 +1,5 @@
 import { dirname, resolve } from 'node:path';
-import { mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createClient, type Client } from '@libsql/client';
 import { drizzle } from 'drizzle-orm/libsql';
@@ -9,8 +9,24 @@ import * as schema from './schema.js';
 let dbInstance: any | null = null;
 let client: Client | null = null;
 
-// Workspace root: three levels up from apps/server (src/db or dist).
-const workspaceRoot = resolve(fileURLToPath(import.meta.url), '../../../..');
+/**
+ * Locate the workspace root by walking up until the pnpm workspace manifest is
+ * found. This is stable whether the server runs from source (`src/db/client.ts`
+ * via tsx) or from the bundled output (`apps/server/dist/index.js`), so the
+ * default SQLite path is the same in every mode.
+ */
+function findWorkspaceRoot(startDir: string): string {
+  let dir = startDir;
+  for (let i = 0; i < 8; i += 1) {
+    if (existsSync(resolve(dir, 'pnpm-workspace.yaml'))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return startDir;
+}
+
+const workspaceRoot = findWorkspaceRoot(dirname(fileURLToPath(import.meta.url)));
 const defaultDatabaseFile = resolve(workspaceRoot, 'data/arena.sqlite');
 
 /**
