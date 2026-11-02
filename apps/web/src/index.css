@@ -148,7 +148,7 @@ textarea:focus {
 }
 
 /* ---------------------------------------------------------------
-   Overlay mode — transparent OBS surface, no scrollbars or margins
+   Overlay mode ï¿½ transparent OBS surface, no scrollbars or margins
    --------------------------------------------------------------- */
 html.overlay-mode,
 body.overlay-mode {
@@ -177,6 +177,51 @@ body.overlay-mode {
 .overlay-graphic.is-hidden {
   opacity: 0;
   transform: translateY(22px) scale(0.995);
+}
+
+/* Objective alert banner: slides in from the securing team's side. */
+@keyframes arena-objective-in-left {
+  0% {
+    opacity: 0;
+    transform: translateX(-115%);
+  }
+  70% {
+    opacity: 1;
+    transform: translateX(2.5%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes arena-objective-in-right {
+  0% {
+    opacity: 0;
+    transform: translateX(115%);
+  }
+  70% {
+    opacity: 1;
+    transform: translateX(-2.5%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.objective-banner {
+  animation-duration: 640ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+.objective-banner.from-left {
+  animation-name: arena-objective-in-left;
+}
+
+.objective-banner.from-right {
+  animation-name: arena-objective-in-right;
 }
 
 @keyframes arena-pulse {

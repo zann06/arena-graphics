@@ -149,11 +149,12 @@ export async function activeThemeMap(): Promise<Partial<Record<GraphicKey, Templ
   return map;
 }
 
-/** Seed one default template per graphic type if none exist. */
+/** Seed one default template per graphic type that has none yet. */
 export async function seedDefaultTemplates(): Promise<void> {
-  const existing = await db.select({ id: graphicsTemplates.id }).from(graphicsTemplates);
-  if (existing.length > 0) return;
+  const existing = await db.select({ templateType: graphicsTemplates.templateType }).from(graphicsTemplates);
+  const covered = new Set(existing.map((row: { templateType: string }) => row.templateType));
   for (const type of TEMPLATE_TYPES) {
+    if (covered.has(type)) continue;
     await createTemplate({
       name: `Default ${type}`,
       templateType: type as GraphicKey,

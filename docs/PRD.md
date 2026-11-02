@@ -173,6 +173,7 @@ Implement independent routes:
 - `/overlay/statistics`
 - `/overlay/mvp`
 - `/overlay/fullscreen`
+- `/overlay/objective`
 
 All overlays:
 - Use transparent page background.

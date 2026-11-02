@@ -92,6 +92,8 @@ for (let i = 0; i < 60 && !(state?.payload?.selectedMatchId === matchId && state
 }
 const ALL = ['scoreboard', 'playerIntro', 'teamIntro', 'draft', 'statistics', 'mvp', 'fullscreen'];
 for (const key of ALL) socket.emit('graphic:set', { key, visible: true });
+// Fire an objective banner that stays on air (durationMs 0) so it is captured.
+socket.emit('objective:alert', { type: 'lord', side: 'blue', durationMs: 0 });
 await wait(900);
 console.log(`Fixture ready: ${state?.payload?.data?.scoreboard?.blue?.shortName} vs ${state?.payload?.data?.scoreboard?.red?.shortName}`);
 void state;
@@ -244,6 +246,7 @@ const overlays = [
   ['statistics', 'overlay-statistics'],
   ['mvp', 'overlay-mvp'],
   ['fullscreen', 'overlay-fullscreen'],
+  ['objective', 'overlay-objective'],
 ];
 
 let failures = 0;

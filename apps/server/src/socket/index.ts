@@ -14,9 +14,11 @@ import {
   resetStatistics,
   setMvp,
   setFullscreen,
+  showObjective,
+  hideObjective,
   loadTeamIntro,
 } from '../realtime/state.js';
-import { DRAFT_FORMATS, FULLSCREEN_MODES, GRAPHIC_KEYS } from '@arena/shared/types/realtime.js';
+import { DRAFT_FORMATS, FULLSCREEN_MODES, GRAPHIC_KEYS, OBJECTIVE_TYPES } from '@arena/shared/types/realtime.js';
 import type {
   ClientToServerEvents,
   ServerToClientEvents,
@@ -33,6 +35,7 @@ const statLineSchema = z.object({
   gold: z.number().int().min(-10_000_000).max(10_000_000),
 });
 const draftFormatValues = Object.keys(DRAFT_FORMATS) as [string, ...string[]];
+const objectiveTypeValues = OBJECTIVE_TYPES as unknown as [string, ...string[]];
 
 const payloadSchemas = {
   matchSelect: z.object({ matchId: idSchema }),
@@ -65,6 +68,13 @@ const payloadSchemas = {
     mode: z.enum(FULLSCREEN_MODES),
     title: z.string().min(1).max(60),
     subtitle: z.string().max(120),
+  }),
+  objectiveAlert: z.object({
+    type: z.enum(objectiveTypeValues),
+    side: sideSchema.nullable().default(null),
+    title: z.string().min(1).max(60).optional(),
+    subtitle: z.string().max(120).optional(),
+    durationMs: z.number().int().min(0).max(60_000).optional(),
   }),
 } as const;
 
@@ -143,6 +153,8 @@ export function setupSocket(httpServer: any) {
     on('statistics:reset', z.any(), () => resetStatistics());
     on('mvp:set', payloadSchemas.mvpSet, (data) => setMvp(data));
     on('fullscreen:set', payloadSchemas.fullscreenSet, (data) => setFullscreen(data));
+    on('objective:alert', payloadSchemas.objectiveAlert, (data) => showObjective(data));
+    on('objective:hide', z.any(), () => hideObjective());
 
     socket.on('system:ping', () => {
       socket.emit('system:pong', 0);

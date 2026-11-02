@@ -5,6 +5,7 @@ import {
   type ClientToServerEvents,
   type GraphicKey,
   type MatchState,
+  type ObjectiveType,
   type ServerToClientEvents,
   type StatisticsData,
 } from '@arena/shared/types/realtime.js';
@@ -39,6 +40,7 @@ const initialState: MatchState = {
       statistics: null,
       mvp: null,
       fullscreen: { mode: 'starting-soon', title: 'STARTING SOON', subtitle: 'Match begins shortly' },
+      objective: null,
     },
   },
 };
@@ -153,6 +155,23 @@ export function useRealtime() {
     socketRef.current?.emit('fullscreen:set', payload);
   }, []);
 
+  const triggerObjective = useCallback(
+    (payload: {
+      type: ObjectiveType;
+      side: 'blue' | 'red' | null;
+      title?: string;
+      subtitle?: string;
+      durationMs?: number;
+    }) => {
+      socketRef.current?.emit('objective:alert', payload);
+    },
+    []
+  );
+
+  const hideObjective = useCallback(() => {
+    socketRef.current?.emit('objective:hide');
+  }, []);
+
   return {
     state,
     connected,
@@ -170,5 +189,7 @@ export function useRealtime() {
     resetStatistics,
     setMvp,
     setFullscreen,
+    triggerObjective,
+    hideObjective,
   };
 }

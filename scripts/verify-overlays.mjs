@@ -76,6 +76,8 @@ for (let i = 0; i < 50 && !(state?.payload?.selectedMatchId === matchId && state
 }
 
 for (const key of ['draft', 'statistics', 'mvp']) socket.emit('graphic:set', { key, visible: true });
+// Objective banner stays on air for the capture so the slide-in can settle.
+socket.emit('objective:alert', { type: 'lord', side: 'blue', durationMs: 0 });
 await wait(800);
 
 console.log('Match:', state?.payload?.data?.scoreboard?.blue?.shortName, 'vs', state?.payload?.data?.scoreboard?.red?.shortName);
@@ -87,6 +89,7 @@ const checks = [
   { name: 'overlay-draft-live', kind: 'draft' },
   { name: 'overlay-statistics-live', kind: 'statistics' },
   { name: 'overlay-mvp-live', kind: 'mvp' },
+  { name: 'overlay-objective-live', kind: 'objective' },
 ];
 
 let failed = 0;

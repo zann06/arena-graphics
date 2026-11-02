@@ -10,6 +10,7 @@ const LABELS: Record<GraphicKey, string> = {
   statistics: 'Statistics',
   mvp: 'MVP',
   fullscreen: 'Fullscreen',
+  objective: 'Objective',
 };
 
 const ROUTES: Record<GraphicKey, string> = {
@@ -20,6 +21,7 @@ const ROUTES: Record<GraphicKey, string> = {
   statistics: 'statistics',
   mvp: 'mvp',
   fullscreen: 'fullscreen',
+  objective: 'objective',
 };
 
 function StatLine({ label, value }: { label: string; value: string }) {

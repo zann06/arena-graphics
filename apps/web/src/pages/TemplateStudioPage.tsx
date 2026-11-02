@@ -26,6 +26,7 @@ const TYPE_LABELS: Record<GraphicKey, string> = {
   statistics: 'Statistics',
   mvp: 'MVP',
   fullscreen: 'Fullscreen',
+  objective: 'Objective Alert',
 };
 
 function ColorField({

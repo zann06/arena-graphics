@@ -59,7 +59,7 @@ let waited = nextState(socket);
 socket.emit('state:request');
 let state = await waited;
 check('state:initial delivered', state?.payload != null, `revision ${state.revision}`);
-check('initial snapshot lists 7 overlay keys', Object.keys(state.payload.overlay).length === 7);
+check('initial snapshot lists 8 overlay keys', Object.keys(state.payload.overlay).length === 8);
 
 // 2. Select match
 state = await emitAndWait(socket, 'match:select', { matchId });
@@ -71,7 +71,7 @@ check('statistics initialised', state.payload.data.statistics != null);
 check('statistics labelled operator entered', state.payload.data.statistics?.label === 'OPERATOR ENTERED');
 
 // 3. Every graphic can be shown and hidden
-const keys = ['scoreboard', 'playerIntro', 'teamIntro', 'draft', 'statistics', 'mvp', 'fullscreen'];
+const keys = ['scoreboard', 'playerIntro', 'teamIntro', 'draft', 'statistics', 'mvp', 'fullscreen', 'objective'];
 for (const key of keys) {
   state = await emitAndWait(socket, 'graphic:set', { key, visible: true });
   check(`graphic:set show ${key}`, state.payload.overlay[key].visible === true);
@@ -128,6 +128,20 @@ check('mvp:set stores KDA', state.payload.data.mvp.kills === 10 && state.payload
 state = await emitAndWait(socket, 'fullscreen:set', { mode: 'break', title: 'BREAK TIME', subtitle: 'Back in 3 minutes' });
 check('fullscreen:set stores card', state.payload.data.fullscreen.title === 'BREAK TIME');
 
+// 8b. Objective alert (manual trigger, team-colored banner)
+state = await emitAndWait(socket, 'objective:alert', { type: 'lord', side: 'blue', durationMs: 0 });
+const objective = state.payload.data.objective;
+check(
+  'objective:alert shows banner',
+  objective?.type === 'lord' && state.payload.overlay.objective.visible === true
+);
+check('objective:alert resolves the team', objective?.team?.id === sb.blue.id, objective?.team?.shortName);
+check('objective:alert default title', objective?.title === 'LORD SLAIN', objective?.title);
+state = await emitAndWait(socket, 'objective:alert', { type: 'turtle', side: 'red', durationMs: 0 });
+check('objective:alert re-trigger bumps nonce', state.payload.data.objective.nonce === objective.nonce + 1);
+state = await emitAndWait(socket, 'objective:hide');
+check('objective:hide hides banner', state.payload.overlay.objective.visible === false);
+
 // 9. Invalid payloads are rejected
 const errors = [];
 const onError = (e) => errors.push(e.message);
@@ -146,6 +160,9 @@ check('invalid graphic key rejected', invalidKeyMessage?.includes('key'), invali
 rejected = onceError();
 socket.emit('statistics:set', { blue: { kills: -5 }, red: {} });
 check('invalid statistics rejected', (await rejected) != null);
+rejected = onceError();
+socket.emit('objective:alert', { type: 'baron', side: 'blue' });
+check('invalid objective type rejected', (await rejected) != null);
 rejected = onceError();
 socket.emit('graphic:set', null);
 check('null payload rejected', (await rejected) != null);

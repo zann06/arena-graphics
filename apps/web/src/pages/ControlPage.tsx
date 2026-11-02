@@ -11,8 +11,11 @@ import { ScreenTabs } from '../components/graphics/screen';
 import {
   GRAPHIC_KEYS,
   DRAFT_FORMATS,
+  OBJECTIVE_LABELS,
+  OBJECTIVE_TYPES,
   type DraftFormatKey,
   type GraphicKey,
+  type ObjectiveType,
   type TeamStatistics,
 } from '@arena/shared/types/realtime.js';
 
@@ -24,6 +27,7 @@ const GRAPHIC_LABELS: Record<GraphicKey, string> = {
   statistics: 'Statistics',
   mvp: 'MVP',
   fullscreen: 'Fullscreen',
+  objective: 'Objective Alert',
 };
 
 const OVERLAY_ROUTES: Record<GraphicKey, string> = {
@@ -34,6 +38,7 @@ const OVERLAY_ROUTES: Record<GraphicKey, string> = {
   statistics: 'statistics',
   mvp: 'mvp',
   fullscreen: 'fullscreen',
+  objective: 'objective',
 };
 
 const STAT_KEYS = ['kills', 'turrets', 'turtles', 'lords', 'gold'] as const;
@@ -76,6 +81,8 @@ export function ControlPage() {
     resetStatistics,
     setMvp,
     setFullscreen,
+    triggerObjective,
+    hideObjective,
   } = useRealtime();
 
   const { data: matches = [] } = useMatches();
@@ -127,6 +134,8 @@ export function ControlPage() {
     subtitle: string;
   }>({ mode: 'starting-soon', title: 'STARTING SOON', subtitle: 'Match begins shortly' });
 
+  const [objectiveSide, setObjectiveSide] = useState<'blue' | 'red'>('blue');
+
   const teamName = (id: number) => teams.find((t) => t.id === id)?.shortName ?? `#${id}`;
 
   const rosterForTeams = useMemo(() => {
@@ -160,6 +169,13 @@ export function ControlPage() {
 
   const updateStat = (side: 'blue' | 'red', stat: (typeof STAT_KEYS)[number], value: number) => {
     setStatsDraft((prev) => ({ ...prev, [side]: { ...prev[side], [stat]: value } }));
+  };
+
+  const fireObjective = (type: ObjectiveType) => {
+    triggerObjective({ type, side: objectiveSide });
+    const team =
+      scoreboard && (objectiveSide === 'blue' ? scoreboard.blue.shortName : scoreboard.red.shortName);
+    toast.success(`${OBJECTIVE_LABELS[type]}${team ? ` — ${team}` : ''}`);
   };
 
   return (
@@ -573,6 +589,57 @@ export function ControlPage() {
           >
             Apply card
           </button>
+        </Section>
+
+        <Section title="Objective alerts" hint="Manual trigger — slides in with team colors, auto-hides after ~5s">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs uppercase tracking-widest text-gray-500">Team</span>
+            <div className="inline-flex overflow-hidden rounded-lg border border-gray-700">
+              {(['blue', 'red'] as const).map((side) => (
+                <button
+                  key={side}
+                  onClick={() => setObjectiveSide(side)}
+                  className={`px-3 py-1.5 text-xs font-bold uppercase tracking-widest transition-colors ${
+                    objectiveSide === side
+                      ? side === 'blue'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-red-600 text-white'
+                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  }`}
+                >
+                  {side === 'blue' ? scoreboard?.blue.shortName ?? 'Blue' : scoreboard?.red.shortName ?? 'Red'}
+                </button>
+              ))}
+            </div>
+            {!scoreboard && (
+              <span className="text-[11px] text-amber-400">Select a match to use team colors.</span>
+            )}
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            {OBJECTIVE_TYPES.map((type) => (
+              <button
+                key={type}
+                onClick={() => fireObjective(type)}
+                className="rounded-lg bg-blue-600 px-3 py-3 text-sm font-bold uppercase tracking-widest hover:bg-blue-500"
+              >
+                {OBJECTIVE_LABELS[type]}
+              </button>
+            ))}
+          </div>
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <p className="text-[11px] text-gray-500">
+              First Blood, Turtle, and Lord can each be fired by the operator the moment they happen.
+            </p>
+            <button
+              onClick={() => {
+                hideObjective();
+                toast.success('Objective banner hidden');
+              }}
+              className="shrink-0 rounded bg-gray-800 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest hover:bg-gray-700"
+            >
+              Hide banner
+            </button>
+          </div>
         </Section>
       </div>
     </div>

@@ -16,12 +16,15 @@ import {
 } from '../services/mlbb.js';
 import {
   GRAPHIC_KEYS,
+  OBJECTIVE_DEFAULT_DURATION_MS,
+  OBJECTIVE_TITLES,
   type DraftFormatCommand,
   type DraftSlotCommand,
   type FullscreenData,
   type GraphicKey,
   type MatchState,
   type MvpCommand,
+  type ObjectiveAlertCommand,
   type OverlayState,
   type StatisticsCommand,
 } from '@arena/shared/types/realtime.js';
@@ -60,6 +63,7 @@ function createInitialState(): MatchState {
         statistics: null,
         mvp: null,
         fullscreen: DEFAULT_FULLSCREEN,
+        objective: null,
       },
     },
   };
@@ -168,12 +172,14 @@ export async function refreshSelectedMatch(): Promise<void> {
 
 export function setGraphicVisible(key: GraphicKey, visible: boolean): void {
   if (!(key in state.payload.overlay)) return;
+  if (key === 'objective' && !visible) clearObjectiveTimer();
   state.payload.overlay[key].visible = visible;
   touch();
   broadcastState();
 }
 
 export function resetGraphics(): void {
+  clearObjectiveTimer();
   state.payload.overlay = emptyOverlay();
   touch();
   broadcastState();
@@ -281,6 +287,57 @@ export async function setMvp(command: MvpCommand): Promise<void> {
 
 export function setFullscreen(payload: FullscreenData): void {
   state.payload.data.fullscreen = payload;
+  touch();
+  broadcastState();
+}
+
+let objectiveTimer: ReturnType<typeof setTimeout> | null = null;
+
+function clearObjectiveTimer(): void {
+  if (objectiveTimer) {
+    clearTimeout(objectiveTimer);
+    objectiveTimer = null;
+  }
+}
+
+/**
+ * Fire an objective alert banner (First Blood / Turtle / Lord). The team is
+ * resolved from the currently selected match so the banner picks up the right
+ * colors and name; the operator may override the copy. The banner auto-hides
+ * after `durationMs` (default ~5s) unless the operator keeps it on air.
+ */
+export function showObjective(command: ObjectiveAlertCommand): void {
+  clearObjectiveTimer();
+
+  const scoreboard = state.payload.data.scoreboard;
+  const team =
+    command.side && scoreboard ? (command.side === 'blue' ? scoreboard.blue : scoreboard.red) : null;
+
+  state.payload.data.objective = {
+    type: command.type,
+    side: command.side,
+    team,
+    title: command.title?.trim() || OBJECTIVE_TITLES[command.type],
+    subtitle: command.subtitle?.trim() || team?.name || 'Objective secured',
+    nonce: (state.payload.data.objective?.nonce ?? 0) + 1,
+  };
+  state.payload.overlay.objective.visible = true;
+  touch();
+  broadcastState();
+
+  const duration = command.durationMs ?? OBJECTIVE_DEFAULT_DURATION_MS;
+  if (duration > 0) {
+    objectiveTimer = setTimeout(() => {
+      objectiveTimer = null;
+      hideObjective();
+    }, duration);
+  }
+}
+
+export function hideObjective(): void {
+  clearObjectiveTimer();
+  if (!state.payload.overlay.objective.visible) return;
+  state.payload.overlay.objective.visible = false;
   touch();
   broadcastState();
 }

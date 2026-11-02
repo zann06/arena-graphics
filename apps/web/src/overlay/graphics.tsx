@@ -2,12 +2,15 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import type {
   DraftSlotData,
   MvpData,
+  ObjectiveAlertData,
+  ObjectiveType,
   PlayerIntroData,
   ScoreboardData,
   StatisticsData,
   TeamIntroData,
   TeamSummary,
 } from '@arena/shared/types/realtime.js';
+import { OBJECTIVE_LABELS } from '@arena/shared/types/realtime.js';
 import type { TemplateTheme } from '@arena/shared/types/templates.js';
 import { hexToRgba, resolveTheme, type ResolvedTheme } from './theme.js';
 
@@ -570,6 +573,116 @@ export function MvpGraphic({
                   <div className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: hexToRgba(theme.textColor, 0.35) }}>Assists</div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </Graphic>
+  );
+}
+
+function ObjectiveEmblem({ type, color }: { type: ObjectiveType; color: string }) {
+  const common = { width: 66, height: 66, viewBox: '0 0 64 64', fill: 'none', 'aria-hidden': true } as const;
+  if (type === 'lord') {
+    return (
+      <svg {...common}>
+        <path d="M8 22l10 8 14-16 14 16 10-8-5 27H13z" fill={color} />
+        <rect x="12" y="51" width="40" height="6" rx="3" fill={color} />
+      </svg>
+    );
+  }
+  if (type === 'turtle') {
+    return (
+      <svg {...common}>
+        <path d="M32 7l20 10v14c0 12-8 20-20 24-12-4-20-12-20-24V17z" fill={color} />
+        <path d="M32 20l10 6v8c0 6-4 10-10 12-6-2-10-6-10-12v-8z" fill="rgba(0,0,0,0.38)" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common}>
+      <path d="M32 6l7 17 18 1-14 12 5 18-16-10-16 10 5-18L7 24l18-1z" fill={color} />
+    </svg>
+  );
+}
+
+/**
+ * Objective alert: a colored banner that slides in from the side of whichever
+ * team secured First Blood / Turtle / Lord. Every trigger carries an increasing
+ * `nonce`, which remounts the banner so the entrance animation replays.
+ */
+export function ObjectiveAlertGraphic({
+  data,
+  visible,
+  theme: rawTheme,
+}: {
+  data: ObjectiveAlertData | null;
+  visible: boolean;
+  theme?: TemplateTheme | null;
+}) {
+  const theme = resolveTheme(rawTheme);
+  const fromRight = data?.side === 'red';
+  const accent = data?.team?.primaryColor ?? theme.accentColor;
+  const secondary = data?.team?.secondaryColor ?? hexToRgba(theme.textColor, 0.4);
+  const direction = fromRight ? '260deg' : '100deg';
+
+  return (
+    <Graphic visible={visible && !!data} align="top" theme={theme}>
+      {data && (
+        <div className="flex justify-center pt-[132px]">
+          <div
+            key={data.nonce}
+            className={`objective-banner ${fromRight ? 'from-right' : 'from-left'} relative flex items-center gap-[26px] py-[24px] pl-[34px] pr-[52px]`}
+            style={{
+              minWidth: 780,
+              background: `linear-gradient(${direction}, ${hexToRgba(accent, 0.97)} 0%, ${hexToRgba(theme.panelColor, 0.97)} 58%, ${hexToRgba(theme.panelColor, 0.86)} 100%)`,
+              [fromRight ? 'borderRight' : 'borderLeft']: `8px solid ${secondary}`,
+              borderRadius: theme.radius ? `${theme.radius}px` : undefined,
+              boxShadow: '0 26px 64px rgba(0,0,0,0.55)',
+            }}
+          >
+            {theme.showAccentBar && (
+              <div
+                className="absolute inset-x-0 top-0 h-[3px]"
+                style={{ background: `linear-gradient(90deg, ${secondary}, ${hexToRgba(secondary, 0)})` }}
+              />
+            )}
+
+            {data.team ? (
+              <Crest team={data.team} size={96} />
+            ) : (
+              <div
+                className="flex items-center justify-center rounded-full"
+                style={{ width: 96, height: 96, background: `linear-gradient(145deg, ${hexToRgba(accent, 0.9)}, #0b1020)` }}
+              >
+                <ObjectiveEmblem type={data.type} color={theme.textColor} />
+              </div>
+            )}
+
+            <div className="min-w-0">
+              <div className="flex items-center gap-3">
+                <span className="h-[3px] w-9" style={{ backgroundColor: secondary }} />
+                <span className="text-[13px] font-semibold uppercase tracking-[0.42em]" style={{ color: hexToRgba(theme.textColor, 0.72) }}>
+                  {OBJECTIVE_LABELS[data.type]}
+                  {data.side ? ` · ${data.side === 'blue' ? 'Blue Side' : 'Red Side'}` : ''}
+                </span>
+              </div>
+              <div
+                className="font-display text-[68px] font-black uppercase leading-[0.95] tracking-[0.02em]"
+                style={{ color: theme.textColor, textShadow: '0 6px 24px rgba(0,0,0,0.5)' }}
+              >
+                {data.title}
+              </div>
+              <div className="mt-1 truncate text-[20px] uppercase tracking-[0.16em]" style={{ color: hexToRgba(theme.textColor, 0.68) }}>
+                {data.subtitle}
+              </div>
+            </div>
+
+            <div
+              className="ml-auto flex h-[92px] w-[92px] shrink-0 items-center justify-center rounded-full"
+              style={{ background: `linear-gradient(145deg, ${hexToRgba(accent, 0.95)}, ${hexToRgba(accent, 0.45)})` }}
+            >
+              <ObjectiveEmblem type={data.type} color={theme.textColor} />
             </div>
           </div>
         </div>

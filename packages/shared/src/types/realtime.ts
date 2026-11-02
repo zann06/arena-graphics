@@ -8,6 +8,7 @@ export const GRAPHIC_KEYS = [
   'statistics',
   'mvp',
   'fullscreen',
+  'objective',
 ] as const;
 
 
@@ -27,6 +28,27 @@ export type DraftFormatKey = keyof typeof DRAFT_FORMATS;
 
 export const FULLSCREEN_MODES = ['starting-soon', 'break', 'result'] as const;
 export type FullscreenMode = (typeof FULLSCREEN_MODES)[number];
+
+/** Objectives that can fire an on-air alert banner. */
+export const OBJECTIVE_TYPES = ['first-blood', 'turtle', 'lord'] as const;
+export type ObjectiveType = (typeof OBJECTIVE_TYPES)[number];
+
+/** Short operator-facing names, used by the dashboard controls. */
+export const OBJECTIVE_LABELS: Record<ObjectiveType, string> = {
+  'first-blood': 'First Blood',
+  turtle: 'Turtle',
+  lord: 'Lord',
+};
+
+/** Default banner headline; the operator may override it per trigger. */
+export const OBJECTIVE_TITLES: Record<ObjectiveType, string> = {
+  'first-blood': 'FIRST BLOOD',
+  turtle: 'TURTLE SLAIN',
+  lord: 'LORD SLAIN',
+};
+
+/** Milliseconds an objective banner stays on air before auto-hiding (0 = manual). */
+export const OBJECTIVE_DEFAULT_DURATION_MS = 5000;
 
 export interface TeamSummary {
   id: number;
@@ -121,6 +143,23 @@ export interface FullscreenData {
   subtitle: string;
 }
 
+export interface ObjectiveAlertData {
+  type: ObjectiveType;
+  /** Which side secured the objective; null for a neutral alert. */
+  side: 'blue' | 'red' | null;
+  /** Team that secured it (resolved from the scoreboard), if a side was given. */
+  team: TeamSummary | null;
+  /** Banner headline, e.g. "LORD SLAIN". */
+  title: string;
+  /** Secondary line, e.g. the team name. */
+  subtitle: string;
+  /**
+   * Increments on every trigger so the overlay replays its entrance animation
+   * even when the banner is already on air.
+   */
+  nonce: number;
+}
+
 export interface OverlayData {
   scoreboard: ScoreboardData | null;
   playerIntro: PlayerIntroData | null;
@@ -129,6 +168,7 @@ export interface OverlayData {
   statistics: StatisticsData | null;
   mvp: MvpData | null;
   fullscreen: FullscreenData | null;
+  objective: ObjectiveAlertData | null;
 }
 
 export interface MatchStatePayload {
@@ -180,6 +220,17 @@ export interface MvpCommand {
   assists: number;
 }
 
+export interface ObjectiveAlertCommand {
+  type: ObjectiveType;
+  /** Team that secured the objective; omit for a neutral alert. */
+  side: 'blue' | 'red' | null;
+  /** Optional overrides for the auto-generated banner copy. */
+  title?: string;
+  subtitle?: string;
+  /** Auto-hide delay in ms; 0 keeps the banner on air until hidden. */
+  durationMs?: number;
+}
+
 export type ClientToServerEvents = {
   'state:request': () => void;
   'match:select': (payload: { matchId: number }) => void;
@@ -194,6 +245,8 @@ export type ClientToServerEvents = {
   'statistics:reset': () => void;
   'mvp:set': (payload: MvpCommand) => void;
   'fullscreen:set': (payload: FullscreenData) => void;
+  'objective:alert': (payload: ObjectiveAlertCommand) => void;
+  'objective:hide': () => void;
   'system:ping': () => void;
 };
 

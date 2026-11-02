@@ -9,6 +9,7 @@ import {
   DraftGraphic,
   StatisticsGraphic,
   MvpGraphic,
+  ObjectiveAlertGraphic,
   StandbyBadge,
 } from './graphics';
 import type { GraphicKey } from '@arena/shared/types/realtime.js';
@@ -21,6 +22,7 @@ const ROUTE_TO_KEY: Record<string, GraphicKey> = {
   statistics: 'statistics',
   mvp: 'mvp',
   fullscreen: 'fullscreen',
+  objective: 'objective',
 };
 
 /** Public overlay URLs, used by the sidebar and the monitor screen. */
@@ -32,6 +34,7 @@ export const OVERLAY_ROUTES: Record<GraphicKey, string> = {
   statistics: '/overlay/statistics',
   mvp: '/overlay/mvp',
   fullscreen: '/overlay/fullscreen',
+  objective: '/overlay/objective',
 };
 
 export function OverlayApp() {
@@ -76,11 +79,14 @@ export function OverlayApp() {
           theme={theme}
         />
       )}
+      {key === 'objective' && (
+        <ObjectiveAlertGraphic data={data.objective} visible={visible} theme={theme} />
+      )}
 
       {!key && (
         <div className="flex h-full w-full items-center justify-center">
           <div className="rounded border border-white/15 bg-black/60 px-6 py-4 text-white">
-            Unknown overlay: {kind}. Valid: scoreboard, player-intro, team-intro, draft, statistics, mvp, fullscreen.
+            Unknown overlay: {kind}. Valid: scoreboard, player-intro, team-intro, draft, statistics, mvp, fullscreen, objective.
           </div>
         </div>
       )}

@@ -37,6 +37,11 @@ Dibangun dengan TypeScript, Fastify + Socket.IO, React + Vite, SQLite, dan OBS W
 |---|---|
 | ![MVP](docs/screenshots/overlay-mvp.png) | ![Fullscreen](docs/screenshots/overlay-fullscreen.png) |
 
+**Objective alert** — banner warna tim yang slide-in saat First Blood / Turtle / Lord diamankan, dipicu manual dari dashboard, hilang otomatis setelah ~5 detik:
+
+![Objective alert](docs/screenshots/overlay-objective.png)
+*Objective alert — Lord untuk RRQ, warna tim diambil dari data tim.*
+
 > Semua overlay di atas adalah capture nyata dari aplikasi, dirender 1920×1080 dengan
 > background transparan (alpha = 0) lalu ditempel ke latar gelap agar terlihat jelas di sini.
 > Di OBS, background transparan inilah yang membuat grafis menyatu dengan gameplay.
@@ -63,8 +68,8 @@ Dibangun dengan TypeScript, Fastify + Socket.IO, React + Vite, SQLite, dan OBS W
 
 - **Manajemen turnamen** — turnamen, tim, pemain, match (BO1/BO3/BO5), pencatatan hasil game, dan skor seri otomatis dari game yang selesai.
 - **Grafis MLBB** — library hero, draft konfigurabel (5-ban/5-pick atau 3-ban/5-pick) tersimpan per game, statistik per game, dan MVP dengan KDA.
-- **7 overlay siap siaran** — scoreboard, player intro, team intro, draft, statistics, MVP, fullscreen (starting soon / break / result). Semua transparan 1920×1080.
-- **Graphics Control** — satu halaman untuk menaruh grafis on-air, memajukan player intro, dan reset.
+- **8 overlay siap siaran** — scoreboard, player intro, team intro, draft, statistics, MVP, fullscreen (starting soon / break / result), dan **objective alert** (banner First Blood / Turtle / Lord berwarna tim). Semua transparan 1920×1080.
+- **Graphics Control** — satu halaman untuk menaruh grafis on-air, memajukan player intro, memicu objective alert (First Blood / Turtle / Lord), dan reset.
 - **Asset Library** — upload logo tim, foto pemain, portrait hero, sponsor, dan background (PNG/JPEG/WebP/GIF/SVG, maks 8 MB).
 - **Template Studio** — tema per grafis (warna, tipografi, skala, radius, accent bar), duplikat/reset/aktifkan, dengan preview overlay live. Tema aktif langsung berlaku on-air.
 - **OBS Integration** — koneksi WebSocket, ganti scene, toggle visibility source. *(Adapter terverifikasi dengan mock — konfirmasi ke OBS nyata sebelum siaran.)*
@@ -129,7 +134,7 @@ Socket.IO, dan asset `/uploads/*`.
 2. Isi **URL** dengan salah satu overlay, contoh `http://127.0.0.1:4000/overlay/scoreboard`.
 3. Set **Width = 1920**, **Height = 1080**.
 4. Centang **Shutdown source when not visible** agar hemat resource.
-5. Ulangi untuk overlay lain (`player-intro`, `team-intro`, `draft`, `statistics`, `mvp`, `fullscreen`).
+5. Ulangi untuk overlay lain (`player-intro`, `team-intro`, `draft`, `statistics`, `mvp`, `fullscreen`, `objective`).
 
 Panduan lengkap (layer order, WebSocket, troubleshooting, checklist siaran) ada di
 **[docs/OBS-SETUP.md](docs/OBS-SETUP.md)**.

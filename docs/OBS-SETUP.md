@@ -43,6 +43,7 @@ Create separate Browser Sources for the graphics you need, such as:
 - `/overlay/statistics`
 - `/overlay/mvp`
 - `/overlay/fullscreen`
+- `/overlay/objective`
 
 The exact routes must match the routes implemented by the application.
 

@@ -112,7 +112,7 @@ export const mvpRecords = sqliteTable('mvpRecords', {
 export const graphicsTemplates = sqliteTable('graphicsTemplates', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
-  templateType: text('templateType', { enum: ['scoreboard', 'playerIntro', 'teamIntro', 'draft', 'statistics', 'mvp', 'fullscreen'] }).notNull(),
+  templateType: text('templateType', { enum: ['scoreboard', 'playerIntro', 'teamIntro', 'draft', 'statistics', 'mvp', 'fullscreen', 'objective'] }).notNull(),
   configurationJson: text('configurationJson').notNull(),
   isActive: integer('isActive').notNull().default(0),
   createdAt: integer('createdAt', { mode: 'timestamp_ms' }).notNull(),
