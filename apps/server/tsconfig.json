@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2023"],
+    "target": "ES2022",
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@arena/shared/*": ["../../packages/shared/src/*"],
+      "@arena/graphics-core/*": ["../../packages/graphics-core/src/*"]
+    },
+    "types": ["node"],
+    "noEmit": false,
+    "declaration": true,
+    "declarationMap": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "database/migrations"]
+}

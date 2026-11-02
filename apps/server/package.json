@@ -1,0 +1,47 @@
+{
+  "name": "@arena/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "arena-server": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:seed": "tsx src/db/seed.ts",
+    "lint": "eslint --cache .",
+    "typecheck": "tsc --noEmit",
+    "test:obs": "tsx ../../scripts/obs-adapter-test.mjs"
+  },
+  "dependencies": {
+    "@arena/graphics-core": "workspace:*",
+    "@arena/shared": "workspace:*",
+    "@fastify/cors": "^11.0.0",
+    "@fastify/multipart": "^10.1.6",
+    "@fastify/static": "^10.0.0",
+    "@libsql/client": "0.15.15",
+    "dotenv": "^16.4.0",
+    "fastify": "^5.0.0",
+    "obs-websocket-js": "^5.0.0",
+    "socket.io": "^4.8.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "@types/socket.io": "^3.0.0",
+    "drizzle-kit": "^0.31.0",
+    "drizzle-orm": "0.39.3",
+    "esbuild": "^0.24.0",
+    "socket.io": "^4.8.0",
+    "tsup": "^9.0.0",
+    "typescript": "^5.9.0"
+  }
+}

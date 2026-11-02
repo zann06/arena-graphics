@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+dist-ssr/
+*.tsbuildinfo
+
+# Environment and local configuration
+.env
+.env.*
+!.env.example
+*.local
+
+# Runtime data (SQLite, uploads, logs)
+.arena-data/
+data/
+database/*.sqlite
+database/*.sqlite-*
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+logs/
+*.log
+
+# Generated artifacts (screenshots, server pid/logs)
+artifacts/
+
+# CI scratch data
+.ci-data/
+
+# Test output
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# Editor and OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Vite
+.vite/
+
+# Local scratch / spike files (kept on disk, not published)
+apps/server/test.js
+apps/server/test-health.js
+apps/server/test-health.mjs
+# Stub/misnamed legacy eslint files (real config is the root eslint.config.js)
+apps/*/.eslintrc.json
+packages/*/.eslintrc.json

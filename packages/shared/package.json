@@ -1,0 +1,17 @@
+{
+  "name": "@arena/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./types/*": "./src/types/*.js",
+    "./constants/*": "./src/constants/*.js"
+  },
+  "scripts": {
+    "lint": "eslint --cache .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0"
+  }
+}

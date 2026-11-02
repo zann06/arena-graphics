@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Typecheck · Lint · Unit · Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript checks
+        run: pnpm typecheck
+
+      - name: ESLint
+        run: pnpm lint
+
+      - name: Unit tests
+        run: pnpm test:unit
+
+      - name: Production build
+        run: pnpm build
+
+  integration:
+    name: Integration (REST · Socket.IO · OBS mock)
+    runs-on: ubuntu-latest
+    needs: quality
+    env:
+      # Keep everything local to the runner; no secrets required.
+      HOST: 127.0.0.1
+      PORT: 4000
+      WEB_ORIGIN: http://localhost:5173
+      ARENA_DATA_DIR: ${{ github.workspace }}/.ci-data
+      DATABASE_URL: file:${{ github.workspace }}/.ci-data/arena.sqlite
+      OBS_HOST: 127.0.0.1
+      OBS_PORT: 4455
+      OBS_PASSWORD: ''
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply database migrations
+        run: pnpm db:migrate
+
+      - name: Build
+        run: pnpm build
+
+      - name: Start server
+        run: |
+          node scripts/start-server.mjs
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4000/api/health > /dev/null; then
+              echo "Server healthy"; exit 0
+            fi
+            sleep 1
+          done
+          echo "Server did not become healthy"; cat artifacts/server.err.log || true; exit 1
+
+      - name: REST + Socket.IO + OBS mock smoke tests
+        run: |
+          node scripts/graphics-smoke.mjs
+          node scripts/mlbb-smoke.mjs
+          node scripts/phase6-smoke.mjs
+          pnpm test:obs
+
+      - name: Stop server
+        if: always()
+        run: node scripts/start-server.mjs --stop || true
