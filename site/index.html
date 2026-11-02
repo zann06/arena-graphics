@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ARENA GRAPHICS — MLBB broadcast graphics, local-first</title>
+    <meta
+      name="description"
+      content="Mesin grafis broadcast Mobile Legends: Bang Bang (MLBB) local-first: 7 overlay transparan 1920×1080, dashboard operator, dan integrasi OBS."
+    />
+    <meta property="og:title" content="ARENA GRAPHICS" />
+    <meta
+      property="og:description"
+      content="Overlay HTML 1920×1080 latar transparan untuk MLBB, dikendalikan dari satu dashboard. Siap OBS."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --navy-950: #05070f;
+        --navy-900: #0a0f1f;
+        --navy-800: #101a33;
+        --navy-700: #16244a;
+        --cyan: #00d9ff;
+        --blue: #237bff;
+        --text: #eaf1ff;
+        --muted: #93a4c4;
+        --line: rgba(120, 160, 255, 0.16);
+        --display: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+        --ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        font-family: var(--ui);
+        color: var(--text);
+        background: radial-gradient(1200px 700px at 80% -10%, rgba(35, 123, 255, 0.18), transparent 60%),
+          radial-gradient(900px 600px at 0% 10%, rgba(0, 217, 255, 0.1), transparent 55%), var(--navy-950);
+        line-height: 1.6;
+      }
+      a {
+        color: var(--cyan);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      .wrap {
+        width: min(1120px, 92vw);
+        margin: 0 auto;
+      }
+      header.hero {
+        padding: 4.5rem 0 3rem;
+        border-bottom: 1px solid var(--line);
+      }
+      .kicker {
+        font-family: var(--display);
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--cyan);
+        font-weight: 700;
+        font-size: 0.85rem;
+      }
+      h1 {
+        font-family: var(--display);
+        font-weight: 800;
+        font-size: clamp(2.8rem, 8vw, 5.5rem);
+        line-height: 0.95;
+        margin: 0.4rem 0 0.6rem;
+        letter-spacing: 0.01em;
+      }
+      h1 .accent {
+        background: linear-gradient(90deg, var(--cyan), var(--blue));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .lede {
+        font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+        color: var(--muted);
+        max-width: 46ch;
+      }
+      .badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 1.4rem 0 1.8rem;
+      }
+      .badge {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.3rem 0.7rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 700;
+        padding: 0.75rem 1.3rem;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+      }
+      .btn:hover {
+        text-decoration: none;
+        transform: translateY(-1px);
+      }
+      .btn.primary {
+        background: linear-gradient(90deg, var(--cyan), var(--blue));
+        color: #041023;
+        box-shadow: 0 10px 30px rgba(0, 217, 255, 0.25);
+      }
+      .btn.ghost {
+        border-color: var(--line);
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.03);
+      }
+      section {
+        padding: 3.5rem 0;
+        border-bottom: 1px solid var(--line);
+      }
+      h2 {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: clamp(1.8rem, 4vw, 2.6rem);
+        margin: 0 0 0.4rem;
+        letter-spacing: 0.01em;
+      }
+      .section-lede {
+        color: var(--muted);
+        margin: 0 0 2rem;
+        max-width: 62ch;
+      }
+      .grid {
+        display: grid;
+        gap: 1.1rem;
+      }
+      .overlays {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+      .shots {
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      }
+      figure.shot {
+        margin: 0;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        overflow: hidden;
+        background: linear-gradient(160deg, var(--navy-800), var(--navy-950));
+      }
+      figure.shot a {
+        display: block;
+      }
+      figure.shot img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      figure.shot figcaption {
+        padding: 0.7rem 0.9rem;
+        font-size: 0.85rem;
+        color: var(--muted);
+        border-top: 1px solid var(--line);
+      }
+      .features {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+      .card {
+        padding: 1.2rem 1.3rem;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.025);
+      }
+      .card h3 {
+        font-family: var(--display);
+        font-size: 1.25rem;
+        margin: 0 0 0.35rem;
+        letter-spacing: 0.02em;
+      }
+      .card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+      .steps {
+        counter-reset: step;
+        display: grid;
+        gap: 1rem;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+      }
+      .steps li {
+        counter-increment: step;
+        position: relative;
+        padding: 1.1rem 1.2rem 1.1rem 3.6rem;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.025);
+      }
+      .steps li::before {
+        content: counter(step);
+        position: absolute;
+        left: 1rem;
+        top: 1.05rem;
+        width: 1.9rem;
+        height: 1.9rem;
+        display: grid;
+        place-items: center;
+        font-family: var(--display);
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: #041023;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--cyan), var(--blue));
+      }
+      .steps h3 {
+        font-family: var(--display);
+        font-size: 1.2rem;
+        margin: 0 0 0.3rem;
+        letter-spacing: 0.02em;
+      }
+      .steps p {
+        margin: 0 0 0.6rem;
+        color: var(--muted);
+        font-size: 0.93rem;
+      }
+      pre {
+        margin: 0;
+        padding: 0.9rem 1rem;
+        background: #030509;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        overflow-x: auto;
+        font-size: 0.85rem;
+        color: #cfe3ff;
+      }
+      code {
+        font-family: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+      }
+      .note {
+        margin-top: 1.6rem;
+        padding: 0.9rem 1.1rem;
+        border-left: 3px solid var(--cyan);
+        background: rgba(0, 217, 255, 0.06);
+        border-radius: 0 10px 10px 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .docs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.7rem;
+        margin-top: 1.4rem;
+      }
+      .docs a {
+        padding: 0.55rem 1rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .docs a:hover {
+        text-decoration: none;
+        border-color: var(--cyan);
+      }
+      footer {
+        padding: 2.5rem 0 3.5rem;
+        color: var(--muted);
+        font-size: 0.88rem;
+        text-align: center;
+      }
+      footer strong {
+        color: var(--text);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="wrap">
+        <p class="kicker">Mobile Legends: Bang Bang · Broadcast Graphics</p>
+        <h1>ARENA <span class="accent">GRAPHICS</span></h1>
+        <p class="lede">
+          Mesin grafis broadcast MLBB <strong>local-first</strong>: tujuh overlay HTML transparan
+          1920×1080, dikendalikan dari satu dashboard operator, siap dipasang di OBS Studio.
+        </p>
+        <div class="badges">
+          <span class="badge">TypeScript</span>
+          <span class="badge">Fastify + Socket.IO</span>
+          <span class="badge">React + Vite</span>
+          <span class="badge">SQLite</span>
+          <span class="badge">OBS WebSocket</span>
+          <span class="badge">MIT License</span>
+        </div>
+        <div class="cta">
+          <a class="btn primary" href="https://github.com/zann06/arena-graphics">Lihat di GitHub →</a>
+          <a class="btn ghost" href="#cara-pakai">Cara pakai</a>
+          <a class="btn ghost" href="#demo">Lihat demo</a>
+        </div>
+      </div>
+    </header>
+
+    <section id="demo">
+      <div class="wrap">
+        <h2>Overlay on-air</h2>
+        <p class="section-lede">
+          Semua overlay dirender pada kanvas 1920×1080 dengan latar transparan (alpha&nbsp;=&nbsp;0),
+          sehingga menyatu dengan gameplay di OBS. Tangkapan di bawah ditempel ke latar gelap agar
+          terlihat jelas.
+        </p>
+        <div class="grid overlays">
+          <figure class="shot">
+            <a href="screenshots/overlay-scoreboard.png"><img src="screenshots/overlay-scoreboard.png" alt="Overlay scoreboard" loading="lazy" /></a>
+            <figcaption>Scoreboard — skor seri, format BO, warna tim.</figcaption>
+          </figure>
+          <figure class="shot">
+            <a href="screenshots/overlay-draft.png"><img src="screenshots/overlay-draft.png" alt="Overlay draft" loading="lazy" /></a>
+            <figcaption>Draft — 5 ban / 5 pick per sisi.</figcaption>
+          </figure>
+          <figure class="shot">
+            <a href="screenshots/overlay-statistics.png"><img src="screenshots/overlay-statistics.png" alt="Overlay statistics" loading="lazy" /></a>
+            <figcaption>Statistics — perbandingan per game.</figcaption>
+          </figure>
+          <figure class="shot">
+            <a href="screenshots/overlay-player-intro.png"><img src="screenshots/overlay-player-intro.png" alt="Overlay player intro" loading="lazy" /></a>
+            <figcaption>Player intro — per pemain, maju dengan satu klik.</figcaption>
+          </figure>
+          <figure class="shot">
+            <a href="screenshots/overlay-team-intro.png"><img src="screenshots/overlay-team-intro.png" alt="Overlay team intro" loading="lazy" /></a>
+            <figcaption>Team intro — roster biru / merah.</figcaption>
+          </figure>
+          <figure class="shot">
+            <a href="screenshots/overlay-mvp.png"><img src="screenshots/overlay-mvp.png" alt="Overlay MVP" loading="lazy" /></a>
+            <figcaption>MVP — pemain, hero, dan KDA.</figcaption>
+          </figure>
+          <figure class="shot">
+            <a href="screenshots/overlay-fullscreen.png"><img src="screenshots/overlay-fullscreen.png" alt="Overlay fullscreen" loading="lazy" /></a>
+            <figcaption>Fullscreen — starting soon / break / result.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboard">
+      <div class="wrap">
+        <h2>Dashboard operator</h2>
+        <p class="section-lede">
+          Satu tempat untuk mengatur turnamen, tim, pemain, draft, statistik, tema grafis, aset, dan
+          koneksi OBS. State disiarkan realtime lewat Socket.IO.
+        </p>
+        <div class="grid shots">
+          <figure class="shot">
+            <a href="screenshots/ui-control.png"><img src="screenshots/ui-control.png" alt="Graphics Control" loading="lazy" /></a>
+            <figcaption>Graphics Control</figcaption>
+          </figure>
+          <figure class="shot">
+            <a href="screenshots/ui-templates.png"><img src="screenshots/ui-templates.png" alt="Template Studio" loading="lazy" /></a>
+            <figcaption>Template Studio</figcaption>
+          </figure>
+          <figure class="shot">
+            <a href="screenshots/ui-assets.png"><img src="screenshots/ui-assets.png" alt="Asset Library" loading="lazy" /></a>
+            <figcaption>Asset Library</figcaption>
+          </figure>
+          <figure class="shot">
+            <a href="screenshots/ui-matches.png"><img src="screenshots/ui-matches.png" alt="Matches" loading="lazy" /></a>
+            <figcaption>Matches</figcaption>
+          </figure>
+          <figure class="shot">
+            <a href="screenshots/ui-obs.png"><img src="screenshots/ui-obs.png" alt="OBS Integration" loading="lazy" /></a>
+            <figcaption>OBS Integration</figcaption>
+          </figure>
+          <figure class="shot">
+            <a href="screenshots/ui-heroes.png"><img src="screenshots/ui-heroes.png" alt="Hero Library" loading="lazy" /></a>
+            <figcaption>Hero Library</figcaption>
+          </figure>
+          <figure class="shot">
+            <a href="screenshots/ui-monitor.png"><img src="screenshots/ui-monitor.png" alt="Monitor" loading="lazy" /></a>
+            <figcaption>Monitor</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="fitur">
+      <div class="wrap">
+        <h2>Fitur</h2>
+        <p class="section-lede">Dibangun untuk alur kerja satu operator, satu mesin, bind ke 127.0.0.1.</p>
+        <div class="grid features">
+          <div class="card">
+            <h3>Manajemen turnamen</h3>
+            <p>Turnamen, tim, pemain, match BO1/BO3/BO5, dan skor seri otomatis dari game yang selesai.</p>
+          </div>
+          <div class="card">
+            <h3>Grafis MLBB</h3>
+            <p>Library hero, draft konfigurabel per game, statistik, dan MVP dengan KDA.</p>
+          </div>
+          <div class="card">
+            <h3>7 overlay siap siaran</h3>
+            <p>Scoreboard, player intro, team intro, draft, statistics, MVP, fullscreen — transparan 1920×1080.</p>
+          </div>
+          <div class="card">
+            <h3>Template Studio</h3>
+            <p>Tema per grafis: warna, tipografi, skala, radius, accent bar. Tema aktif langsung on-air.</p>
+          </div>
+          <div class="card">
+            <h3>Asset Library</h3>
+            <p>Upload logo tim, foto pemain, portrait hero, sponsor, dan background (maks 8&nbsp;MB).</p>
+          </div>
+          <div class="card">
+            <h3>OBS Integration</h3>
+            <p>Koneksi WebSocket, ganti scene, toggle visibility source — password tetap di server.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="cara-pakai">
+      <div class="wrap">
+        <h2>Cara pakai</h2>
+        <p class="section-lede">Prasyarat: Node.js ≥ 22.12, pnpm ≥ 10, dan OBS Studio untuk siaran.</p>
+        <ol class="steps">
+          <li>
+            <h3>Clone &amp; setup</h3>
+            <p>Sekali jalan: cek toolchain, install dependency, buat <code>.env</code>, migrasi database.</p>
+            <pre><code>git clone https://github.com/zann06/arena-graphics.git
+cd arena-graphics
+pnpm setup        # tambahkan -Seed untuk data demo</code></pre>
+          </li>
+          <li>
+            <h3>Jalankan</h3>
+            <p>Mode development menjalankan server <code>:4000</code> dan dashboard <code>:5173</code>.</p>
+            <pre><code>pnpm dev</code></pre>
+          </li>
+          <li>
+            <h3>Pasang overlay di OBS</h3>
+            <p>
+              Tambah <strong>Browser Source</strong>, isi URL overlay, lalu set 1920×1080. Ulangi untuk
+              tiap overlay yang dipakai.
+            </p>
+            <pre><code>http://127.0.0.1:4000/overlay/scoreboard
+http://127.0.0.1:4000/overlay/draft
+http://127.0.0.1:4000/overlay/mvp</code></pre>
+          </li>
+          <li>
+            <h3>Mode produksi</h3>
+            <p>Build SPA disajikan oleh server API — satu origin melayani dashboard, REST, dan Socket.IO.</p>
+            <pre><code>pnpm build
+node scripts/start-server.mjs</code></pre>
+          </li>
+        </ol>
+        <div class="note">
+          Integrasi OBS WebSocket sudah diuji terhadap mock obs-websocket, namun
+          <strong>belum diverifikasi dengan instance OBS Studio nyata</strong> — konfirmasi ganti scene
+          &amp; visibility source sebelum siaran.
+        </div>
+        <div class="docs">
+          <a href="https://github.com/zann06/arena-graphics/blob/main/docs/PRD.md">PRD</a>
+          <a href="https://github.com/zann06/arena-graphics/blob/main/docs/ARCHITECTURE.md">Arsitektur</a>
+          <a href="https://github.com/zann06/arena-graphics/blob/main/docs/OBS-SETUP.md">OBS Setup</a>
+          <a href="https://github.com/zann06/arena-graphics#readme">README lengkap</a>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap">
+        <p>
+          <strong>ARENA GRAPHICS</strong> — dibangun untuk komunitas esports MLBB. Silakan fork,
+          modifikasi, dan kontribusi. Dirilis di bawah lisensi MIT.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

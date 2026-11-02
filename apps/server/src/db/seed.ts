@@ -1,3 +1,5 @@
+import { pathToFileURL } from 'node:url';
+
 export async function seed() {
   console.log('[Seed] Starting...');
 
@@ -13,6 +15,6 @@ export async function seed() {
   };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  seed();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  void seed();
 }

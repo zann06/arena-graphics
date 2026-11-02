@@ -110,9 +110,7 @@ arena-graphics/
 ├── scripts/
 ├── PRD.md
 ├── ARCHITECTURE.md
-├── DEVELOPMENT.md
 ├── OBS-SETUP.md
-├── prompt.md
 └── README.md
 ```
 

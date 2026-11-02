@@ -1,4 +1,5 @@
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createClient, type Client } from '@libsql/client';
 import { drizzle } from 'drizzle-orm/libsql';
@@ -32,7 +33,24 @@ function resolveDatabaseUrl(): string {
   return configured;
 }
 
+/**
+ * Make sure the directory that will hold a local SQLite file exists before the
+ * client opens it. libSQL/SQLite create the file but not its parent directory,
+ * so a fresh data dir (e.g. CI's `.ci-data`) would otherwise fail to open.
+ */
+function ensureDatabaseDirectory(url: string): void {
+  if (!url.startsWith('file:')) return;
+  const rawPath = url.slice('file:'.length).split(/[?#]/, 1)[0] ?? '';
+  if (!rawPath || rawPath.startsWith(':memory:')) return;
+  try {
+    mkdirSync(dirname(rawPath), { recursive: true });
+  } catch {
+    // Best effort: let the client surface a precise error if this fails.
+  }
+}
+
 const dbUrl = resolveDatabaseUrl();
+ensureDatabaseDirectory(dbUrl);
 
 export function initDB(): any {
   if (dbInstance) return dbInstance;

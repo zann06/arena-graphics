@@ -1,4 +1,5 @@
 ﻿import { createClient } from '@libsql/client';
+import { pathToFileURL } from 'node:url';
 import { getDatabaseUrl } from './client.js';
 
 interface Migration {
@@ -208,6 +209,8 @@ export async function migrate(): Promise<void> {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Cross-platform "run as main" check: comparing against `file://${argv[1]}`
+// never matches on Windows (backslash paths), so use the URL conversion.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   void migrate();
 }

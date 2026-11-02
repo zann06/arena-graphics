@@ -27,6 +27,12 @@ logs/
 # Generated artifacts (screenshots, server pid/logs)
 artifacts/
 
+# GitHub Pages build copies screenshots here at deploy time
+site/screenshots/
+
+# Local-only development notes (moved out of the public repo)
+dev-docs/
+
 # CI scratch data
 .ci-data/
 

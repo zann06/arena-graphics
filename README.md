@@ -9,11 +9,16 @@ Dibangun dengan TypeScript, Fastify + Socket.IO, React + Vite, SQLite, dan OBS W
 
 <sub>Node.js ≥ 22.12 · pnpm ≥ 10 · Windows 10/11</sub>
 
+[![CI](https://github.com/zann06/arena-graphics/actions/workflows/ci.yml/badge.svg)](https://github.com/zann06/arena-graphics/actions/workflows/ci.yml)
+[![Showcase](https://github.com/zann06/arena-graphics/actions/workflows/pages.yml/badge.svg)](https://zann06.github.io/arena-graphics/)
+
 </div>
 
 ---
 
 ## Demo
+
+> 🌐 **Showcase online:** <https://zann06.github.io/arena-graphics/> — galeri lengkap overlay & dashboard.
 
 ### Overlay on-air
 
@@ -192,19 +197,19 @@ packages/
   graphics-core/    helper scaling/animasi (ber-unit-test)
 scripts/            setup, verify, start-server, smoke test, screenshot CDP
 docs/
-  screenshots/      gambar demo untuk README
-  internal/         catatan pengembangan per fase
+  screenshots/      gambar demo untuk README & situs showcase
+site/               halaman showcase (GitHub Pages)
 ```
 
 ---
 
 ## Dokumentasi
 
+Demo lengkap & showcase ada di **<https://zann06.github.io/arena-graphics/>**.
+
 - [PRD](docs/PRD.md) — visi produk, fitur, kriteria penerimaan.
 - [Arsitektur](docs/ARCHITECTURE.md) — arsitektur, alur data, protokol.
 - [OBS Setup](docs/OBS-SETUP.md) — panduan OBS Studio & checklist siaran.
-- [Development](docs/DEVELOPMENT.md) — checklist bertahap + work log.
-- Report per fase: [Phase 4](docs/PHASE4_REPORT.md) · [Phase 5](docs/PHASE5_REPORT.md) · [Phase 6](docs/PHASE6_REPORT.md) · [Phase 7](docs/PHASE7_REPORT.md)
 
 ---
 
